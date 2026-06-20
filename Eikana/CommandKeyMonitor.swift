@@ -17,6 +17,30 @@ final class CommandKeyMonitor {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
+    private init() {}
+
+    private func handleCommandEvent(
+        side: PendingCommand,
+        isPressed: Bool,
+        action: () -> Void
+    ) {
+        if isPressed {
+            pendingCommand = side
+            commandUsedWithOtherKey = false
+        } else {
+            if pendingCommand == side,
+               !commandUsedWithOtherKey {
+                action()
+            }
+            pendingCommand = .none
+        }
+    }
+
+    private enum KeyCode {
+        static let leftCommand: Int64 = 0x37
+        static let rightCommand: Int64 = 0x36
+    }
+
     private enum PendingCommand {
         case none
         case left
@@ -25,8 +49,6 @@ final class CommandKeyMonitor {
 
     private var pendingCommand: PendingCommand = .none
     private var commandUsedWithOtherKey = false
-
-    private init() {}
 
     /// 監視開始
     func start() {
@@ -55,30 +77,21 @@ final class CommandKeyMonitor {
             // Commandキーの物理左右を判定（左: 0x37, 右: 0x36）
             // flagsChangedは押下/解放の両方で来るため、押下時のみ反応させる
             // かつ単押し判定のため状態管理を行う
-            if keyCode == 0x37 {
-                if flags.contains(.maskCommand) {
-                    CommandKeyMonitor.shared.pendingCommand = .left
-                    CommandKeyMonitor.shared.commandUsedWithOtherKey = false
-                } else {
-                    if CommandKeyMonitor.shared.pendingCommand == .left,
-                       !CommandKeyMonitor.shared.commandUsedWithOtherKey {
-                        InputSourceSwitcher.selectEnglish()
-                    }
-                    CommandKeyMonitor.shared.pendingCommand = .none
+            if keyCode == KeyCode.leftCommand {
+                CommandKeyMonitor.shared.handleCommandEvent(
+                    side: .left,
+                    isPressed: flags.contains(.maskCommand)
+                ) {
+                    InputSourceSwitcher.selectEnglish()
                 }
-            } else if keyCode == 0x36 {
-                if flags.contains(.maskCommand) {
-                    CommandKeyMonitor.shared.pendingCommand = .right
-                    CommandKeyMonitor.shared.commandUsedWithOtherKey = false
-                } else {
-                    if CommandKeyMonitor.shared.pendingCommand == .right,
-                       !CommandKeyMonitor.shared.commandUsedWithOtherKey {
-                        InputSourceSwitcher.selectJapanese()
-                    }
-                    CommandKeyMonitor.shared.pendingCommand = .none
+            } else if keyCode == KeyCode.rightCommand {
+                CommandKeyMonitor.shared.handleCommandEvent(
+                    side: .right,
+                    isPressed: flags.contains(.maskCommand)
+                ) {
+                    InputSourceSwitcher.selectJapanese()
                 }
             }
-//            print("test keyCode: \(keyCode)")
 
             return Unmanaged.passUnretained(event)
         }
