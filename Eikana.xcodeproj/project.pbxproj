@@ -6,18 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		B64875162FE650B400F798EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B64875122FE650B400F798EC /* Assets.xcassets */; };
-		B64875172FE650B400F798EC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64875132FE650B400F798EC /* ContentView.swift */; };
-		B64875182FE650B400F798EC /* EikanaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64875142FE650B400F798EC /* EikanaApp.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		B6486C902FE36C9A00F798EC /* Eikana.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Eikana.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B64875122FE650B400F798EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		B64875132FE650B400F798EC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		B64875142FE650B400F798EC /* EikanaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EikanaApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B648751C2FE650E900F798EC /* Eikana */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Eikana;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B6486C8D2FE36C9A00F798EC /* Frameworks */ = {
@@ -33,7 +32,7 @@
 		B6486C872FE36C9A00F798EC = {
 			isa = PBXGroup;
 			children = (
-				B64875152FE650B400F798EC /* Eikana */,
+				B648751C2FE650E900F798EC /* Eikana */,
 				B6486C912FE36C9A00F798EC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -44,16 +43,6 @@
 				B6486C902FE36C9A00F798EC /* Eikana.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		B64875152FE650B400F798EC /* Eikana */ = {
-			isa = PBXGroup;
-			children = (
-				B64875122FE650B400F798EC /* Assets.xcassets */,
-				B64875132FE650B400F798EC /* ContentView.swift */,
-				B64875142FE650B400F798EC /* EikanaApp.swift */,
-			);
-			path = Eikana;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -70,6 +59,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B648751C2FE650E900F798EC /* Eikana */,
 			);
 			name = Eikana;
 			packageProductDependencies = (
@@ -117,7 +109,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B64875162FE650B400F798EC /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,8 +119,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B64875172FE650B400F798EC /* ContentView.swift in Sources */,
-				B64875182FE650B400F798EC /* EikanaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
