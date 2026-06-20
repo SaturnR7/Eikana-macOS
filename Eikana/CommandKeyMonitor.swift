@@ -62,7 +62,7 @@ final class CommandKeyMonitor {
                 } else {
                     if CommandKeyMonitor.shared.pendingCommand == .left,
                        !CommandKeyMonitor.shared.commandUsedWithOtherKey {
-                        _ = InputSourceSwitcher.selectEnglish()
+                        InputSourceSwitcher.selectEnglish()
                     }
                     CommandKeyMonitor.shared.pendingCommand = .none
                 }
@@ -73,7 +73,7 @@ final class CommandKeyMonitor {
                 } else {
                     if CommandKeyMonitor.shared.pendingCommand == .right,
                        !CommandKeyMonitor.shared.commandUsedWithOtherKey {
-                        _ = InputSourceSwitcher.selectJapanese()
+                        InputSourceSwitcher.selectJapanese()
                     }
                     CommandKeyMonitor.shared.pendingCommand = .none
                 }

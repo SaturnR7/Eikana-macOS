@@ -30,15 +30,11 @@ enum InputSourceSwitcher {
         keyUp?.post(tap: .cgSessionEventTap)
     }
 
-    @discardableResult
-    static func selectEnglish() -> Bool {
+    static func selectEnglish() {
         sendSpecialKey(0x66)
-        return true
     }
 
-    @discardableResult
-    static func selectJapanese() -> Bool {
+    static func selectJapanese() {
         sendSpecialKey(0x68)
-        return true
     }
 }
