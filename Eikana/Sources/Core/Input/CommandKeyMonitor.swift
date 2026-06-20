@@ -20,7 +20,6 @@ final class CommandKeyMonitor {
     func start() {
         guard eventTap == nil else { return }
         // グローバルで flagsChanged と keyDown を監視
-        let mask = CGEventMask.commandMonitor
         let callback: CGEventTapCallBack = { _, type, event, _ in
             let monitor = CommandKeyMonitor.shared
             if type == .keyDown {
@@ -63,7 +62,7 @@ final class CommandKeyMonitor {
         guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap,
                                           place: .headInsertEventTap,
                                           options: .defaultTap,
-                                          eventsOfInterest: mask,
+                                          eventsOfInterest: CGEventMask.commandMonitor,
                                           callback: callback,
                                           userInfo: nil) else { return }
         eventTap = tap
