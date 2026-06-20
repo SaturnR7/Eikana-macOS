@@ -2,22 +2,20 @@
 //  CommandKeyMonitor.swift
 //  Eikana
 //
-//  Created by Assistant on 2026/06/20.
+//  Created by Hidemasa Kobayashi on 2026/06/20.
 //
 
 import Cocoa
 import Carbon
 
-/// 左右のCommandキー単押しを検出して入力ソースを切り替える
-/// - 左Command: 英語
-/// - 右Command: 日本語
 final class CommandKeyMonitor {
     static let shared = CommandKeyMonitor()
 
+    // MARK: - Properties
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-
-    private init() {}
+    private var commandUsedWithOtherKey = false
+    private var pendingCommand: PendingCommand?
 
     private func handleCommandEvent(
         side: PendingCommand,
@@ -36,21 +34,6 @@ final class CommandKeyMonitor {
         }
     }
 
-    private enum KeyCode {
-        static let leftCommand: Int64 = 0x37
-        static let rightCommand: Int64 = 0x36
-    }
-
-    private enum PendingCommand {
-        case none
-        case left
-        case right
-    }
-
-    private var pendingCommand: PendingCommand = .none
-    private var commandUsedWithOtherKey = false
-
-    /// 監視開始
     func start() {
         guard eventTap == nil else { return }
         // グローバルで flagsChanged と keyDown を監視
@@ -59,9 +42,10 @@ final class CommandKeyMonitor {
             (1 << CGEventType.keyDown.rawValue)
         )
         let callback: CGEventTapCallBack = { _, type, event, _ in
+            let monitor = CommandKeyMonitor.shared
             if type == .keyDown {
-                if CommandKeyMonitor.shared.pendingCommand != .none {
-                    CommandKeyMonitor.shared.commandUsedWithOtherKey = true
+                if monitor.pendingCommand != .none {
+                    monitor.commandUsedWithOtherKey = true
                 }
                 return Unmanaged.passUnretained(event)
             }
@@ -77,19 +61,19 @@ final class CommandKeyMonitor {
             // Commandキーの物理左右を判定（左: 0x37, 右: 0x36）
             // flagsChangedは押下/解放の両方で来るため、押下時のみ反応させる
             // かつ単押し判定のため状態管理を行う
-            if keyCode == KeyCode.leftCommand {
-                CommandKeyMonitor.shared.handleCommandEvent(
+            if keyCode == KeyCode.leftCommand.rawValue {
+                monitor.handleCommandEvent(
                     side: .left,
                     isPressed: flags.contains(.maskCommand)
                 ) {
-                    InputSourceSwitcher.selectEnglish()
+                    InputSourceSwitcher.select(.english)
                 }
-            } else if keyCode == KeyCode.rightCommand {
-                CommandKeyMonitor.shared.handleCommandEvent(
+            } else if keyCode == KeyCode.rightCommand.rawValue {
+                monitor.handleCommandEvent(
                     side: .right,
                     isPressed: flags.contains(.maskCommand)
                 ) {
-                    InputSourceSwitcher.selectJapanese()
+                    InputSourceSwitcher.select(.japanese)
                 }
             }
 
@@ -109,7 +93,6 @@ final class CommandKeyMonitor {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
-    /// 監視停止
     func stop() {
         guard let tap = eventTap else { return }
         CGEvent.tapEnable(tap: tap, enable: false)
@@ -118,5 +101,18 @@ final class CommandKeyMonitor {
         eventTap = nil
         pendingCommand = .none
         commandUsedWithOtherKey = false
+    }
+}
+
+// MARK: - enum
+private extension CommandKeyMonitor {
+    enum KeyCode: Int64 {
+        case leftCommand = 0x37
+        case rightCommand = 0x36
+    }
+
+    enum PendingCommand {
+        case left
+        case right
     }
 }
