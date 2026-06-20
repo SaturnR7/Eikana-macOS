@@ -17,7 +17,7 @@ struct EikanaApp: App {
     }
     var body: some Scene {
         MenuBarExtra("Eikana", systemImage: "command") {
-            ContentView()
+            MenuBarIconView()
         }
     }
 }
