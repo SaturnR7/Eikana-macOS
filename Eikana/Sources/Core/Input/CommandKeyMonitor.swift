@@ -81,7 +81,7 @@ final class CommandKeyMonitor {
         if let src = runLoopSource { CFRunLoopRemoveSource(CFRunLoopGetCurrent(), src, .commonModes) }
         runLoopSource = nil
         eventTap = nil
-        pendingCommand = .none
+        pendingCommand = nil
         commandUsedWithOtherKey = false
     }
 }

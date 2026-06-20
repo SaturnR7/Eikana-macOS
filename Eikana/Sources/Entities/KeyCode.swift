@@ -12,8 +12,6 @@ enum KeyCode {
     enum Physical: Int64 {
         case leftCommand = 0x37
         case rightCommand = 0x36
-
-//        func 
     }
 
     // Input Source Code
