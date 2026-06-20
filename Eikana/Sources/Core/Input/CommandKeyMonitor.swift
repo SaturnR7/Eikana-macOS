@@ -16,10 +16,15 @@ final class CommandKeyMonitor {
     private var runLoopSource: CFRunLoopSource?
     private var commandUsedWithOtherKey = false
     private var pendingCommand: PendingCommand?
-    private let languageList: [Int64: KeyCode.Language] = [
-        KeyCode.Physical.leftCommand.rawValue: .english,
-        KeyCode.Physical.rightCommand.rawValue: .japanese
+    private let commandMap: [Int64: CommandConfig] = [
+        KeyCode.Physical.leftCommand.rawValue: CommandConfig(side: .left, language: .english),
+        KeyCode.Physical.rightCommand.rawValue: CommandConfig(side: .right, language: .japanese)
     ]
+
+    private struct CommandConfig {
+        let side: PendingCommand
+        let language: KeyCode.Language
+    }
 
     func start() {
         guard eventTap == nil else { return }
@@ -38,9 +43,6 @@ final class CommandKeyMonitor {
                 return Unmanaged.passUnretained(event)
             }
 
-            // 左右 Command の押下/離脱を検出
-            let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-
             // 左右 Command キーを判定
             // flagsChanged は押下/解放の両方で来るため、押下時のみ反応させる
             // かつ単押し判定のため状態管理を行う
@@ -48,14 +50,12 @@ final class CommandKeyMonitor {
             // flagsChanged:
             // Command / Shift / Option / Control などの修飾キーの状態変化イベント
             // 「押した瞬間」ではなく「押下・解放など状態が変わったとき」に発火する
-            if let language = monitor.languageList[keyCode] {
-                let side: PendingCommand = keyCode == KeyCode.Physical.leftCommand.rawValue ? .left : .right
-
+            if let config = monitor.commandMap[event.getIntegerValueField(.keyboardEventKeycode)] {
                 monitor.handleCommandEvent(
-                    side: side,
+                    side: config.side,
                     isPressed: event.flags.contains(.maskCommand)
                 ) {
-                    InputSourceSwitcher.select(language)
+                    InputSourceSwitcher.select(config.language)
                 }
             }
 
