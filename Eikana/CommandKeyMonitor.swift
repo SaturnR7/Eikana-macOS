@@ -9,42 +9,22 @@ import Cocoa
 import Carbon
 
 final class CommandKeyMonitor {
+    // MARK: - Properties
     static let shared = CommandKeyMonitor()
 
-    // MARK: - Properties
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var commandUsedWithOtherKey = false
     private var pendingCommand: PendingCommand?
 
-    private func handleCommandEvent(
-        side: PendingCommand,
-        isPressed: Bool,
-        action: () -> Void
-    ) {
-        if isPressed {
-            pendingCommand = side
-            commandUsedWithOtherKey = false
-        } else {
-            if pendingCommand == side,
-               !commandUsedWithOtherKey {
-                action()
-            }
-            pendingCommand = .none
-        }
-    }
-
     func start() {
         guard eventTap == nil else { return }
         // グローバルで flagsChanged と keyDown を監視
-        let mask = CGEventMask(
-            (1 << CGEventType.flagsChanged.rawValue) |
-            (1 << CGEventType.keyDown.rawValue)
-        )
+        let mask = CGEventMask.commandMonitor
         let callback: CGEventTapCallBack = { _, type, event, _ in
             let monitor = CommandKeyMonitor.shared
             if type == .keyDown {
-                if monitor.pendingCommand != .none {
+                if monitor.pendingCommand != nil {
                     monitor.commandUsedWithOtherKey = true
                 }
                 return Unmanaged.passUnretained(event)
@@ -61,14 +41,14 @@ final class CommandKeyMonitor {
             // Commandキーの物理左右を判定（左: 0x37, 右: 0x36）
             // flagsChangedは押下/解放の両方で来るため、押下時のみ反応させる
             // かつ単押し判定のため状態管理を行う
-            if keyCode == KeyCode.leftCommand.rawValue {
+            if keyCode == KeyCode.Physical.leftCommand.rawValue {
                 monitor.handleCommandEvent(
                     side: .left,
                     isPressed: flags.contains(.maskCommand)
                 ) {
                     InputSourceSwitcher.select(.english)
                 }
-            } else if keyCode == KeyCode.rightCommand.rawValue {
+            } else if keyCode == KeyCode.Physical.rightCommand.rawValue {
                 monitor.handleCommandEvent(
                     side: .right,
                     isPressed: flags.contains(.maskCommand)
@@ -104,13 +84,32 @@ final class CommandKeyMonitor {
     }
 }
 
-// MARK: - enum
+// MARK: - Private
 private extension CommandKeyMonitor {
-    enum KeyCode: Int64 {
-        case leftCommand = 0x37
-        case rightCommand = 0x36
+    private func handleCommandEvent(
+        side: PendingCommand,
+        isPressed: Bool,
+        action: () -> Void
+    ) {
+        if isPressed {
+            pendingCommand = side
+            commandUsedWithOtherKey = false
+        } else {
+            if pendingCommand == side,
+               !commandUsedWithOtherKey {
+                action()
+            }
+            pendingCommand = nil
+        }
     }
+}
 
+// MARK: - Pending Command State
+// 「どちらのCommandキーが現在操作対象か」を保持するための状態
+// left: 左Commandキーが押下された状態
+// right: 右Commandキーが押下された状態
+// 目的は Command 単押しとショートカット操作（Cmd+Cなど）を区別するため
+private extension CommandKeyMonitor {
     enum PendingCommand {
         case left
         case right

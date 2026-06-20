@@ -10,7 +10,7 @@ import Carbon
 
 enum InputSourceSwitcher {
 
-    static func select(_ language: LanguageKeyCode) {
+    static func select(_ language: KeyCode.Language) {
         switch language {
         case .english:
             sendSpecialKey(language.rawValue)
@@ -23,9 +23,7 @@ enum InputSourceSwitcher {
 // MARK: - Private
 private extension InputSourceSwitcher {
     static func sendSpecialKey(_ keyCode: CGKeyCode) {
-        guard let source = CGEventSource(stateID: .hidSystemState) else {
-            return
-        }
+        guard let source = CGEventSource(stateID: .hidSystemState) else { return }
 
         let keyDown = CGEvent(
             keyboardEventSource: source,
@@ -41,13 +39,5 @@ private extension InputSourceSwitcher {
 
         keyDown?.post(tap: .cgSessionEventTap)
         keyUp?.post(tap: .cgSessionEventTap)
-    }
-}
-
-// MARK: - Language
-extension InputSourceSwitcher {
-    enum LanguageKeyCode: CGKeyCode {
-        case english = 0x66 // eisu
-        case japanese = 0x68 // kana
     }
 }
