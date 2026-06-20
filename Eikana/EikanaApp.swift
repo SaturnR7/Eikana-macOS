@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import Carbon
 
 @main
 struct EikanaApp: App {
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra("Sample", systemImage: "command") {
             ContentView()
         }
     }
