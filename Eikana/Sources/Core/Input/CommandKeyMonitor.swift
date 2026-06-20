@@ -16,43 +16,46 @@ final class CommandKeyMonitor {
     private var runLoopSource: CFRunLoopSource?
     private var commandUsedWithOtherKey = false
     private var pendingCommand: PendingCommand?
+    private let languageList: [Int64: KeyCode.Language] = [
+        KeyCode.Physical.leftCommand.rawValue: .english,
+        KeyCode.Physical.rightCommand.rawValue: .japanese
+    ]
 
     func start() {
         guard eventTap == nil else { return }
         // グローバルで flagsChanged と keyDown を監視
         let callback: CGEventTapCallBack = { _, type, event, _ in
             let monitor = CommandKeyMonitor.shared
-            if type == .keyDown {
+            switch type {
+            case .keyDown:
                 if monitor.pendingCommand != nil {
                     monitor.commandUsedWithOtherKey = true
                 }
                 return Unmanaged.passUnretained(event)
-            }
-
-            guard type == .flagsChanged else {
+            case .flagsChanged:
+                break
+            default:
                 return Unmanaged.passUnretained(event)
             }
 
-            // 左右Commandの押下/離脱を検出
-            let flags = event.flags
+            // 左右 Command の押下/離脱を検出
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
 
-            // Commandキーの物理左右を判定（左: 0x37, 右: 0x36）
-            // flagsChangedは押下/解放の両方で来るため、押下時のみ反応させる
+            // 左右 Command キーを判定
+            // flagsChanged は押下/解放の両方で来るため、押下時のみ反応させる
             // かつ単押し判定のため状態管理を行う
-            if keyCode == KeyCode.Physical.leftCommand.rawValue {
+            //
+            // flagsChanged:
+            // Command / Shift / Option / Control などの修飾キーの状態変化イベント
+            // 「押した瞬間」ではなく「押下・解放など状態が変わったとき」に発火する
+            if let language = monitor.languageList[keyCode] {
+                let side: PendingCommand = keyCode == KeyCode.Physical.leftCommand.rawValue ? .left : .right
+
                 monitor.handleCommandEvent(
-                    side: .left,
-                    isPressed: flags.contains(.maskCommand)
+                    side: side,
+                    isPressed: event.flags.contains(.maskCommand)
                 ) {
-                    InputSourceSwitcher.select(.english)
-                }
-            } else if keyCode == KeyCode.Physical.rightCommand.rawValue {
-                monitor.handleCommandEvent(
-                    side: .right,
-                    isPressed: flags.contains(.maskCommand)
-                ) {
-                    InputSourceSwitcher.select(.japanese)
+                    InputSourceSwitcher.select(language)
                 }
             }
 
