@@ -16,20 +16,37 @@ final class CommandKeyMonitor {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    
-    // どちらかのCommandキーが押されているかの状態管理
-    private var leftCmdPressed: Bool = false
-    private var rightCmdPressed: Bool = false
+
+    private enum PendingCommand {
+        case none
+        case left
+        case right
+    }
+
+    private var pendingCommand: PendingCommand = .none
+    private var commandUsedWithOtherKey = false
 
     private init() {}
 
     /// 監視開始
     func start() {
         guard eventTap == nil else { return }
-        // グローバルで flagsChanged を監視
-        let mask = CGEventMask(1 << CGEventType.flagsChanged.rawValue)
+        // グローバルで flagsChanged と keyDown を監視
+        let mask = CGEventMask(
+            (1 << CGEventType.flagsChanged.rawValue) |
+            (1 << CGEventType.keyDown.rawValue)
+        )
         let callback: CGEventTapCallBack = { _, type, event, _ in
-            guard type == .flagsChanged else { return Unmanaged.passUnretained(event) }
+            if type == .keyDown {
+                if CommandKeyMonitor.shared.pendingCommand != .none {
+                    CommandKeyMonitor.shared.commandUsedWithOtherKey = true
+                }
+                return Unmanaged.passUnretained(event)
+            }
+
+            guard type == .flagsChanged else {
+                return Unmanaged.passUnretained(event)
+            }
 
             // 左右Commandの押下/離脱を検出
             let flags = event.flags
@@ -40,28 +57,28 @@ final class CommandKeyMonitor {
             // かつ単押し判定のため状態管理を行う
             if keyCode == 0x37 {
                 if flags.contains(.maskCommand) {
-                    // 左Command押下
-                    if !CommandKeyMonitor.shared.leftCmdPressed && !CommandKeyMonitor.shared.rightCmdPressed {
+                    CommandKeyMonitor.shared.pendingCommand = .left
+                    CommandKeyMonitor.shared.commandUsedWithOtherKey = false
+                } else {
+                    if CommandKeyMonitor.shared.pendingCommand == .left,
+                       !CommandKeyMonitor.shared.commandUsedWithOtherKey {
                         _ = InputSourceSwitcher.selectEnglish()
                     }
-                    CommandKeyMonitor.shared.leftCmdPressed = true
-                } else {
-                    // 左Command離脱
-                    CommandKeyMonitor.shared.leftCmdPressed = false
+                    CommandKeyMonitor.shared.pendingCommand = .none
                 }
             } else if keyCode == 0x36 {
                 if flags.contains(.maskCommand) {
-                    // 右Command押下
-                    if !CommandKeyMonitor.shared.rightCmdPressed && !CommandKeyMonitor.shared.leftCmdPressed {
+                    CommandKeyMonitor.shared.pendingCommand = .right
+                    CommandKeyMonitor.shared.commandUsedWithOtherKey = false
+                } else {
+                    if CommandKeyMonitor.shared.pendingCommand == .right,
+                       !CommandKeyMonitor.shared.commandUsedWithOtherKey {
                         _ = InputSourceSwitcher.selectJapanese()
                     }
-                    CommandKeyMonitor.shared.rightCmdPressed = true
-                } else {
-                    // 右Command離脱
-                    CommandKeyMonitor.shared.rightCmdPressed = false
+                    CommandKeyMonitor.shared.pendingCommand = .none
                 }
             }
-            print("test keyCode: \(keyCode)")
+//            print("test keyCode: \(keyCode)")
 
             return Unmanaged.passUnretained(event)
         }
@@ -86,8 +103,7 @@ final class CommandKeyMonitor {
         if let src = runLoopSource { CFRunLoopRemoveSource(CFRunLoopGetCurrent(), src, .commonModes) }
         runLoopSource = nil
         eventTap = nil
-        leftCmdPressed = false
-        rightCmdPressed = false
+        pendingCommand = .none
+        commandUsedWithOtherKey = false
     }
 }
-
