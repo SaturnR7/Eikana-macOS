@@ -12,7 +12,6 @@ import Cocoa
 @main
 struct EikanaApp: App {
     init() {
-        // アプリ起動時に command キーを開始
         CommandKeyMonitor.shared.start()
     }
     var body: some Scene {
