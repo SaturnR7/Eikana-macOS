@@ -11,9 +11,8 @@ import Cocoa
 
 @main
 struct EikanaApp: App {
-    init() {
-        CommandKeyMonitor.shared.start()
-    }
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         MenuBarExtra("Eikana", systemImage: "command") {
             MenuBarIconView()

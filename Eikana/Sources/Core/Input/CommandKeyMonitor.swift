@@ -10,27 +10,22 @@ import Carbon
 
 final class CommandKeyMonitor {
     // MARK: - Properties
-    static let shared = CommandKeyMonitor()
-
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var commandUsedWithOtherKey = false
     private var pendingCommand: PendingCommand?
-    private let commandMap: [Int64: CommandConfig] = [
-        KeyCode.Physical.leftCommand.rawValue: CommandConfig(side: .left, language: .english),
-        KeyCode.Physical.rightCommand.rawValue: CommandConfig(side: .right, language: .japanese)
+    private let commandMap: [Int64: KeyConfig] = [
+        KeyCode.Physical.leftCommand.rawValue: KeyConfig(side: .left, language: .english),
+        KeyCode.Physical.rightCommand.rawValue: KeyConfig(side: .right, language: .japanese)
     ]
-
-    private struct CommandConfig {
-        let side: PendingCommand
-        let language: KeyCode.Language
-    }
 
     func start() {
         guard eventTap == nil else { return }
-        // グローバルで flagsChanged と keyDown を監視
-        let callback: CGEventTapCallBack = { _, type, event, _ in
-            let monitor = CommandKeyMonitor.shared
+
+        let callback: CGEventTapCallBack = { _, type, event, refcon in
+            guard let refcon else { return Unmanaged.passUnretained(event) }
+            let monitor = Unmanaged<CommandKeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
+
             switch type {
             case .keyDown:
                 if monitor.pendingCommand != nil {
@@ -43,13 +38,6 @@ final class CommandKeyMonitor {
                 return Unmanaged.passUnretained(event)
             }
 
-            // 左右 Command キーを判定
-            // flagsChanged は押下/解放の両方で来るため、押下時のみ反応させる
-            // かつ単押し判定のため状態管理を行う
-            //
-            // flagsChanged:
-            // Command / Shift / Option / Control などの修飾キーの状態変化イベント
-            // 「押した瞬間」ではなく「押下・解放など状態が変わったとき」に発火する
             if let config = monitor.commandMap[event.getIntegerValueField(.keyboardEventKeycode)] {
                 monitor.handleCommandEvent(
                     side: config.side,
@@ -62,12 +50,13 @@ final class CommandKeyMonitor {
             return Unmanaged.passUnretained(event)
         }
 
+        let selfPtr = Unmanaged.passUnretained(self).toOpaque()
         guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap,
                                           place: .headInsertEventTap,
                                           options: .defaultTap,
                                           eventsOfInterest: CGEventMask.commandMonitor,
                                           callback: callback,
-                                          userInfo: nil) else { return }
+                                          userInfo: selfPtr) else { return }
         eventTap = tap
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         guard let source = runLoopSource else { return }
@@ -115,5 +104,13 @@ private extension CommandKeyMonitor {
     enum PendingCommand {
         case left
         case right
+    }
+}
+
+// MARK: - Struct
+private extension CommandKeyMonitor {
+    struct KeyConfig {
+        let side: PendingCommand
+        let language: KeyCode.Language
     }
 }
