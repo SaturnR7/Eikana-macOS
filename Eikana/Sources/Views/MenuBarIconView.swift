@@ -10,7 +10,9 @@ import SwiftUI
 struct MenuBarIconView: View {
     var body: some View {
         VStack {
-            Text("Hello, world!")
+            Text("ログイン時に開く")
+            Divider()
+            Text("終了")
         }
     }
 }

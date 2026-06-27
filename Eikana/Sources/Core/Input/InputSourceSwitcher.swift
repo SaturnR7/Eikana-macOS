@@ -20,7 +20,7 @@ enum InputSourceSwitcher {
     }
 }
 
-// MARK: - Private
+// MARK: - Private Method
 private extension InputSourceSwitcher {
     static func sendSpecialKey(_ keyCode: CGKeyCode) {
         guard let source = CGEventSource(stateID: .hidSystemState) else { return }

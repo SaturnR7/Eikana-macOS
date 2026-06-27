@@ -75,9 +75,9 @@ final class CommandKeyMonitor {
     }
 }
 
-// MARK: - Private
+// MARK: - Private Method
 private extension CommandKeyMonitor {
-    private func handleCommandEvent(
+    func handleCommandEvent(
         side: PendingCommand,
         isPressed: Bool,
         action: () -> Void
@@ -85,13 +85,11 @@ private extension CommandKeyMonitor {
         if isPressed {
             pendingCommand = side
             commandUsedWithOtherKey = false
-        } else {
-            if pendingCommand == side,
-               !commandUsedWithOtherKey {
-                action()
-            }
-            pendingCommand = nil
+            return
         }
+        guard pendingCommand == side, !commandUsedWithOtherKey else { return }
+        defer { pendingCommand = nil }
+        action()
     }
 }
 
@@ -107,7 +105,7 @@ private extension CommandKeyMonitor {
     }
 }
 
-// MARK: - Struct
+// MARK: - Key Config
 private extension CommandKeyMonitor {
     struct KeyConfig {
         let side: PendingCommand
