@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
+import AppKit
 
 struct MenuBarIconView: View {
     var body: some View {
         VStack {
             Text("ログイン時に開く")
             Divider()
-            Text("終了")
+            Button("終了") {
+                NSApplication.shared.terminate(nil)
+            }
         }
     }
 }
