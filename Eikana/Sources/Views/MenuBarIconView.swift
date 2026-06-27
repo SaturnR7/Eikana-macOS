@@ -22,17 +22,22 @@ struct MenuBarIconView: View {
                 NSApplication.shared.terminate(nil)
             }
         }
+        .onAppear {
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+        }
     }
 
     // MARK: - Private Method
     private func toggleLaunchAtLogin() {
         do {
-            if launchAtLogin {
+            let isEnabled = (SMAppService.mainApp.status == .enabled)
+            if isEnabled {
                 try SMAppService.mainApp.unregister()
             } else {
                 try SMAppService.mainApp.register()
             }
 
+            print("test regist status：\(SMAppService.mainApp.status)")
             launchAtLogin = (SMAppService.mainApp.status == .enabled)
         } catch {
             print("Failed to update Launch at Login: \(error)")
