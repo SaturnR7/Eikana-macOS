@@ -8,19 +8,99 @@
 import Carbon
 
 enum InputSourceSwitcher {
+    struct InputSource: Identifiable, Hashable {
+        let id: String
+        let name: String
+    }
 
-    static func select(_ language: KeyCode.Language) {
-        switch language {
-        case .english:
-            sendSpecialKey(language.rawValue)
-        case .japanese:
-            sendSpecialKey(language.rawValue)
+    enum CommandSide: String {
+        case left
+        case right
+
+        var defaultsKey: String {
+            "commandInputSource.\(rawValue)"
         }
+
+        var fallbackLanguage: KeyCode.Language {
+            switch self {
+            case .left:
+                .english
+            case .right:
+                .japanese
+            }
+        }
+    }
+
+    static var availableInputSources: [InputSource] {
+        guard let sources = TISCreateInputSourceList(nil, false)?.takeRetainedValue() as? [TISInputSource] else {
+            return []
+        }
+
+        let inputSources = sources.compactMap { source -> InputSource? in
+            guard isSelectableKeyboardInputSource(source),
+                  let id = stringProperty(source, kTISPropertyInputSourceID) else {
+                return nil
+            }
+
+            let name = stringProperty(source, kTISPropertyLocalizedName) ?? id
+            return InputSource(id: id, name: name)
+        }
+
+        return inputSources.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    static func selectedInputSourceID(for side: CommandSide) -> String? {
+        UserDefaults.standard.string(forKey: side.defaultsKey)
+    }
+
+    static func setSelectedInputSourceID(_ inputSourceID: String, for side: CommandSide) {
+        UserDefaults.standard.set(inputSourceID, forKey: side.defaultsKey)
+    }
+
+    static func select(for side: CommandSide) {
+        if let inputSourceID = selectedInputSourceID(for: side), select(inputSourceID: inputSourceID) {
+            return
+        }
+
+        sendSpecialKey(side.fallbackLanguage.rawValue)
+    }
+
+    static func select(inputSourceID: String) -> Bool {
+        guard let source = inputSource(with: inputSourceID) else { return false }
+        return TISSelectInputSource(source) == noErr
     }
 }
 
 // MARK: - Private Method
 private extension InputSourceSwitcher {
+    static func inputSource(with inputSourceID: String) -> TISInputSource? {
+        let properties = [kTISPropertyInputSourceID as String: inputSourceID] as CFDictionary
+        guard let sources = TISCreateInputSourceList(properties, false)?.takeRetainedValue() as? [TISInputSource] else {
+            return nil
+        }
+
+        return sources.first
+    }
+
+    static func isSelectableKeyboardInputSource(_ source: TISInputSource) -> Bool {
+        guard let category = stringProperty(source, kTISPropertyInputSourceCategory),
+              category == kTISCategoryKeyboardInputSource as String else {
+            return false
+        }
+
+        return boolProperty(source, kTISPropertyInputSourceIsSelectCapable)
+    }
+
+    static func stringProperty(_ source: TISInputSource, _ key: CFString) -> String? {
+        guard let pointer = TISGetInputSourceProperty(source, key) else { return nil }
+        return Unmanaged<CFString>.fromOpaque(pointer).takeUnretainedValue() as String
+    }
+
+    static func boolProperty(_ source: TISInputSource, _ key: CFString) -> Bool {
+        guard let pointer = TISGetInputSourceProperty(source, key) else { return false }
+        return Unmanaged<CFBoolean>.fromOpaque(pointer).takeUnretainedValue() == kCFBooleanTrue
+    }
+
     static func sendSpecialKey(_ keyCode: CGKeyCode) {
         guard let source = CGEventSource(stateID: .hidSystemState) else { return }
 

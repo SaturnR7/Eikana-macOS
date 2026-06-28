@@ -14,8 +14,8 @@ final class CommandKeyMonitor {
     private var commandUsedWithOtherKey = false
     private var pendingCommand: PendingCommand?
     private let commandMap: [Int64: KeyConfig] = [
-        KeyCode.Physical.leftCommand.rawValue: KeyConfig(side: .left, language: .english),
-        KeyCode.Physical.rightCommand.rawValue: KeyConfig(side: .right, language: .japanese)
+        KeyCode.Physical.leftCommand.rawValue: KeyConfig(side: .left, commandSide: .left),
+        KeyCode.Physical.rightCommand.rawValue: KeyConfig(side: .right, commandSide: .right)
     ]
 
     func start() {
@@ -42,7 +42,7 @@ final class CommandKeyMonitor {
                     side: config.side,
                     isPressed: event.flags.contains(.maskCommand)
                 ) {
-                    InputSourceSwitcher.select(config.language)
+                    InputSourceSwitcher.select(for: config.commandSide)
                 }
             }
 
@@ -108,6 +108,6 @@ private extension CommandKeyMonitor {
 private extension CommandKeyMonitor {
     struct KeyConfig {
         let side: PendingCommand
-        let language: KeyCode.Language
+        let commandSide: InputSourceSwitcher.CommandSide
     }
 }
