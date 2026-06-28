@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import Carbon
-import Cocoa
 
 @main
 struct EikanaApp: App {

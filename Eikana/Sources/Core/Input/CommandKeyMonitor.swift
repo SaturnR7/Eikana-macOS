@@ -5,7 +5,6 @@
 //  Created by Hidemasa Kobayashi on 2026/06/20.
 //
 
-import Cocoa
 import Carbon
 
 final class CommandKeyMonitor {

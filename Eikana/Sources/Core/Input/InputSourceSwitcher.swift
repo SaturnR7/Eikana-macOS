@@ -5,7 +5,6 @@
 //  Created by Hidemasa Kobayashi on 2026/06/20.
 //
 
-import Foundation
 import Carbon
 
 enum InputSourceSwitcher {

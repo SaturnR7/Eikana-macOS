@@ -5,10 +5,9 @@
 //  Created by Hidemasa Kobayashi on 2026/06/18.
 //
 
-import SwiftUI
-import AppKit
-import ServiceManagement
 import Combine
+import ServiceManagement
+import SwiftUI
 
 struct MenuBarIconView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled

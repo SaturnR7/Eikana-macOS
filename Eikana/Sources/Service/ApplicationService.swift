@@ -5,9 +5,7 @@
 //  Created by Hidemasa Kobayashi on 2026/06/28.
 //
 
-import Foundation
 import AppKit
-import Observation
 
 @Observable
 final class ApplicationService {
