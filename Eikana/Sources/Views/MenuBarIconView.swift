@@ -18,7 +18,10 @@ struct MenuBarIconView: View {
             Button(action: {
                 applicationService.toggleLoginItem()
             }) {
-                Label("ログイン時に開く", systemImage: launchAtLogin ? "checkmark" : "")
+                HStack {
+                    if launchAtLogin { Image(systemName: "checkmark") }
+                    Text("ログイン時に開く")
+                }
             }
             Divider()
             Button("再起動") {
