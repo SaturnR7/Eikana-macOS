@@ -40,14 +40,12 @@ struct MenuBarIconView: View {
     // MARK: - Private Method
     private func toggleLaunchAtLogin() {
         do {
-            let isEnabled = (SMAppService.mainApp.status == .enabled)
-            if isEnabled {
+            if launchAtLogin {
                 try SMAppService.mainApp.unregister()
             } else {
                 try SMAppService.mainApp.register()
             }
-
-            launchAtLogin = (SMAppService.mainApp.status == .enabled)
+            launchAtLogin.toggle()
         } catch {
             print("Failed to update Launch at Login: \(error)")
         }
