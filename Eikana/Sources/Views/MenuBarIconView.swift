@@ -8,7 +8,7 @@
 import SwiftUI
 import AppKit
 import ServiceManagement
-internal import Combine
+import Combine
 
 struct MenuBarIconView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -43,7 +43,6 @@ struct MenuBarIconView: View {
                 try SMAppService.mainApp.register()
             }
 
-            print("test regist status：\(SMAppService.mainApp.status)")
             launchAtLogin = (SMAppService.mainApp.status == .enabled)
         } catch {
             print("Failed to update Launch at Login: \(error)")
