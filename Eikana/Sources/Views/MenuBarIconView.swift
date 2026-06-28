@@ -19,6 +19,10 @@ struct MenuBarIconView: View {
                 Label("ログイン時に開く", systemImage: launchAtLogin ? "checkmark" : "")
             }
             Divider()
+            Button("再起動") {
+                restartApplication()
+            }
+            Divider()
             Button("終了") {
                 NSApplication.shared.terminate(nil)
             }
@@ -46,6 +50,19 @@ struct MenuBarIconView: View {
             launchAtLogin = (SMAppService.mainApp.status == .enabled)
         } catch {
             print("Failed to update Launch at Login: \(error)")
+        }
+    }
+
+    private func restartApplication() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = [Bundle.main.bundlePath]
+
+        do {
+            try process.run()
+            NSApplication.shared.terminate(nil)
+        } catch {
+            print("Failed to restart application: \(error)")
         }
     }
 }
