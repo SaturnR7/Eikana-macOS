@@ -10,8 +10,8 @@ import ServiceManagement
 import SwiftUI
 
 struct MenuBarIconView: View {
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @Environment(ApplicationService.self) private var applicationService
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     var body: some View {
         VStack {
