@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import ServiceManagement
 
 @Observable
 final class ApplicationService {
@@ -21,6 +22,15 @@ final class ApplicationService {
             NSApplication.shared.terminate(nil)
         } catch {
             print("Failed to restart application: \(error)")
+        }
+    }
+
+    // App Login Item
+    func toggleLoginItem() {
+        if SMAppService.mainApp.status == .enabled {
+            try? SMAppService.mainApp.unregister()
+        } else {
+            try? SMAppService.mainApp.register()
         }
     }
 }

@@ -15,7 +15,9 @@ struct MenuBarIconView: View {
 
     var body: some View {
         VStack {
-            Button(action: toggleLaunchAtLogin) {
+            Button(action: {
+                applicationService.toggleLoginItem()
+            }) {
                 Label("ログイン時に開く", systemImage: launchAtLogin ? "checkmark" : "")
             }
             Divider()
@@ -34,20 +36,6 @@ struct MenuBarIconView: View {
             Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
         ) { _ in
             launchAtLogin = (SMAppService.mainApp.status == .enabled)
-        }
-    }
-
-    // MARK: - Private Method
-    private func toggleLaunchAtLogin() {
-        do {
-            if launchAtLogin {
-                try SMAppService.mainApp.unregister()
-            } else {
-                try SMAppService.mainApp.register()
-            }
-            launchAtLogin.toggle()
-        } catch {
-            print("Failed to update Launch at Login: \(error)")
         }
     }
 }
