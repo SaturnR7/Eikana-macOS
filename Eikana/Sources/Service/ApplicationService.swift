@@ -7,7 +7,9 @@
 
 import Foundation
 import AppKit
+import Observation
 
+@Observable
 final class ApplicationService {
 
     // Restart

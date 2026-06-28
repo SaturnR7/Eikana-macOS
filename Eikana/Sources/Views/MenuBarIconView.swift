@@ -12,7 +12,7 @@ import Combine
 
 struct MenuBarIconView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
-    private let appRestartService = ApplicationService()
+    @Environment(ApplicationService.self) private var applicationService
 
     var body: some View {
         VStack {
@@ -21,7 +21,7 @@ struct MenuBarIconView: View {
             }
             Divider()
             Button("再起動") {
-                appRestartService.restart()
+                applicationService.restart()
             }
             Divider()
             Button("終了") {
