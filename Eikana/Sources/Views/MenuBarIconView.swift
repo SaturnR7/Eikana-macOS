@@ -12,9 +12,20 @@ import SwiftUI
 struct MenuBarIconView: View {
     @Environment(ApplicationService.self) private var applicationService
     @State private var isLaunchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var inputSources = InputSourceSwitcher.availableInputSources
+    @State private var selectedLeftInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .left)
+    @State private var selectedRightInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .right)
 
     var body: some View {
         VStack {
+            Menu("左Command") {
+                inputSourceButtons(for: .left, selectedID: selectedLeftInputSourceID)
+            }
+            Menu("右Command") {
+                inputSourceButtons(for: .right, selectedID: selectedRightInputSourceID)
+            }
+            Divider()
             Button(action: {
                 applicationService.toggleLoginItem()
             }) {
@@ -32,14 +43,50 @@ struct MenuBarIconView: View {
                 NSApplication.shared.terminate(nil)
             }
         }
+        .onAppear {
+            refreshInputSourceState()
+        }
         .onReceive(
             Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
         ) { _ in
             isLaunchAtLogin = (applicationService.isLoginItemEnabled())
+            refreshInputSourceState()
         }
     }
 }
 
+// MARK: - Private Method
+private extension MenuBarIconView {
+    @ViewBuilder
+    func inputSourceButtons(
+        for side: InputSourceSwitcher.CommandSide,
+        selectedID: String?
+    ) -> some View {
+        if inputSources.isEmpty {
+            Text("入力ソースがありません")
+        } else {
+            ForEach(inputSources) { inputSource in
+                Button(action: {
+                    InputSourceSwitcher.setSelectedInputSourceID(inputSource.id, for: side)
+                    refreshInputSourceState()
+                }) {
+                    HStack {
+                        if selectedID == inputSource.id { Image(systemName: "checkmark") }
+                        Text(inputSource.name)
+                    }
+                }
+            }
+        }
+    }
+
+    func refreshInputSourceState() {
+        inputSources = InputSourceSwitcher.availableInputSources
+        selectedLeftInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .left)
+        selectedRightInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .right)
+    }
+}
+
 #Preview {
-    MenuBarIconView()
+    let applicationService = ApplicationService()
+    MenuBarIconView().environment(applicationService)
 }
