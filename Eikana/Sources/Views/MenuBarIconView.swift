@@ -12,6 +12,7 @@ import Combine
 
 struct MenuBarIconView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    private let appRestartService = ApplicationService()
 
     var body: some View {
         VStack {
@@ -20,7 +21,7 @@ struct MenuBarIconView: View {
             }
             Divider()
             Button("再起動") {
-                restartApplication()
+                appRestartService.restart()
             }
             Divider()
             Button("終了") {
@@ -50,19 +51,6 @@ struct MenuBarIconView: View {
             launchAtLogin = (SMAppService.mainApp.status == .enabled)
         } catch {
             print("Failed to update Launch at Login: \(error)")
-        }
-    }
-
-    private func restartApplication() {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        process.arguments = [Bundle.main.bundlePath]
-
-        do {
-            try process.run()
-            NSApplication.shared.terminate(nil)
-        } catch {
-            print("Failed to restart application: \(error)")
         }
     }
 }
