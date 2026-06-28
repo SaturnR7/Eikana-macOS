@@ -8,6 +8,7 @@
 import SwiftUI
 import AppKit
 import ServiceManagement
+internal import Combine
 
 struct MenuBarIconView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -24,6 +25,11 @@ struct MenuBarIconView: View {
         }
         .onAppear {
             launchAtLogin = SMAppService.mainApp.status == .enabled
+        }
+        .onReceive(
+            Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+        ) { _ in
+            launchAtLogin = (SMAppService.mainApp.status == .enabled)
         }
     }
 
