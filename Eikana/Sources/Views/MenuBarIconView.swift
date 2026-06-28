@@ -29,13 +29,10 @@ struct MenuBarIconView: View {
                 NSApplication.shared.terminate(nil)
             }
         }
-        .onAppear {
-            launchAtLogin = SMAppService.mainApp.status == .enabled
-        }
         .onReceive(
             Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
         ) { _ in
-            launchAtLogin = (SMAppService.mainApp.status == .enabled)
+            launchAtLogin = (applicationService.isLoginItemEnabled())
         }
     }
 }

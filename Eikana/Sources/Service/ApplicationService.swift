@@ -33,4 +33,9 @@ final class ApplicationService {
             try? SMAppService.mainApp.register()
         }
     }
+
+    // Check Login Item Status
+    func isLoginItemEnabled() -> Bool {
+        SMAppService.mainApp.status == .enabled
+    }
 }
