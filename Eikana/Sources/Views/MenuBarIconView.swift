@@ -12,12 +12,17 @@ import SwiftUI
 struct MenuBarIconView: View {
     @Environment(ApplicationService.self) private var applicationService
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var switchingMode = InputSourceSwitcher.switchingMode
     @State private var inputSources = InputSourceSwitcher.availableInputSources
     @State private var selectedLeftInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .left)
     @State private var selectedRightInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .right)
 
     var body: some View {
         VStack {
+            Menu("切り替え方式") {
+                switchingModeButtons()
+            }
+            Divider()
             Menu("左Command") {
                 inputSourceButtons(for: .left, selectedID: selectedLeftInputSourceID)
             }
@@ -57,6 +62,21 @@ struct MenuBarIconView: View {
 // MARK: - Private Method
 private extension MenuBarIconView {
     @ViewBuilder
+    func switchingModeButtons() -> some View {
+        ForEach(InputSourceSwitcher.SwitchingMode.allCases, id: \.self) { mode in
+            Button(action: {
+                InputSourceSwitcher.switchingMode = mode
+                refreshInputSourceState()
+            }) {
+                HStack {
+                    if switchingMode == mode { Image(systemName: "checkmark") }
+                    Text(mode.title)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
     func inputSourceButtons(
         for side: InputSourceSwitcher.CommandSide,
         selectedID: String?
@@ -79,6 +99,7 @@ private extension MenuBarIconView {
     }
 
     func refreshInputSourceState() {
+        switchingMode = InputSourceSwitcher.switchingMode
         inputSources = InputSourceSwitcher.availableInputSources
         selectedLeftInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .left)
         selectedRightInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .right)
