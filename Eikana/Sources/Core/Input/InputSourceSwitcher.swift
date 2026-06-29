@@ -6,11 +6,28 @@
 //
 
 import Carbon
+import Foundation
 
 enum InputSourceSwitcher {
     struct InputSource: Identifiable, Hashable {
         let id: String
         let name: String
+    }
+
+    enum SwitchingMode: String, CaseIterable {
+        case inputSource
+        case googleJapaneseInput
+
+        static let defaultsKey = "inputSourceSwitchingMode"
+
+        var title: String {
+            switch self {
+            case .inputSource:
+                "入力ソース指定"
+            case .googleJapaneseInput:
+                "Google日本語入力"
+            }
+        }
     }
 
     enum CommandSide: String {
@@ -28,6 +45,19 @@ enum InputSourceSwitcher {
             case .right:
                 .japanese
             }
+        }
+    }
+
+    static var switchingMode: SwitchingMode {
+        get {
+            guard let rawValue = UserDefaults.standard.string(forKey: SwitchingMode.defaultsKey) else {
+                return .inputSource
+            }
+
+            return SwitchingMode(rawValue: rawValue) ?? .inputSource
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: SwitchingMode.defaultsKey)
         }
     }
 
@@ -58,11 +88,12 @@ enum InputSourceSwitcher {
     }
 
     static func select(for side: CommandSide) {
-        if let inputSourceID = selectedInputSourceID(for: side), select(inputSourceID: inputSourceID) {
-            return
+        switch switchingMode {
+        case .inputSource:
+            selectConfiguredInputSource(for: side)
+        case .googleJapaneseInput:
+            sendSpecialKey(side.fallbackLanguage.rawValue)
         }
-
-        sendSpecialKey(side.fallbackLanguage.rawValue)
     }
 
     static func select(inputSourceID: String) -> Bool {
@@ -73,6 +104,14 @@ enum InputSourceSwitcher {
 
 // MARK: - Private Method
 private extension InputSourceSwitcher {
+    static func selectConfiguredInputSource(for side: CommandSide) {
+        if let inputSourceID = selectedInputSourceID(for: side), select(inputSourceID: inputSourceID) {
+            return
+        }
+
+        sendSpecialKey(side.fallbackLanguage.rawValue)
+    }
+
     static func inputSource(with inputSourceID: String) -> TISInputSource? {
         let properties = [kTISPropertyInputSourceID as String: inputSourceID] as CFDictionary
         guard let sources = TISCreateInputSourceList(properties, false)?.takeRetainedValue() as? [TISInputSource] else {
