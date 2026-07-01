@@ -23,9 +23,9 @@ enum InputSourceSwitcher {
         var title: String {
             switch self {
             case .inputSource:
-                "入力ソース指定"
+                "すべて（Google入力を除く）"
             case .googleJapaneseInput:
-                "Google日本語入力"
+                "Google入力"
             }
         }
     }

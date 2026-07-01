@@ -20,7 +20,7 @@ struct MenuBarIconView: View {
 
     var body: some View {
         VStack {
-            Menu("切り替え方式") {
+            Menu("入力ソース") {
                 switchingModeButtons()
             }
             Divider()
