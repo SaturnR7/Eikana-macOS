@@ -12,7 +12,6 @@ import SwiftUI
 struct MenuBarIconView: View {
     @Environment(ApplicationService.self) private var applicationService
     @State private var isLaunchAtLogin = SMAppService.mainApp.status == .enabled
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var switchingMode = InputSourceSwitcher.switchingMode
     @State private var inputSources = InputSourceSwitcher.availableInputSources
     @State private var selectedLeftInputSourceID = InputSourceSwitcher.selectedInputSourceID(for: .left)
