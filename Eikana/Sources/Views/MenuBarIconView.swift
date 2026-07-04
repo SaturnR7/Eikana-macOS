@@ -11,7 +11,7 @@ import SwiftUI
 
 struct MenuBarIconView: View {
     @Environment(ApplicationService.self) private var applicationService
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var isLaunchAtLogin = SMAppService.mainApp.status == .enabled
 
     var body: some View {
         VStack {
@@ -19,7 +19,7 @@ struct MenuBarIconView: View {
                 applicationService.toggleLoginItem()
             }) {
                 HStack {
-                    if launchAtLogin { Image(systemName: "checkmark") }
+                    if isLaunchAtLogin { Image(systemName: "checkmark") }
                     Text("ログイン時に開く")
                 }
             }
@@ -35,7 +35,7 @@ struct MenuBarIconView: View {
         .onReceive(
             Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
         ) { _ in
-            launchAtLogin = (applicationService.isLoginItemEnabled())
+            isLaunchAtLogin = (applicationService.isLoginItemEnabled())
         }
     }
 }
