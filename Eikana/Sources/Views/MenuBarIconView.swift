@@ -15,6 +15,10 @@ struct MenuBarIconView: View {
 
     var body: some View {
         VStack {
+            #if DEBUG
+            Text("Debug")
+            Divider()
+            #endif
             Button(action: {
                 applicationService.toggleLoginItem()
             }) {

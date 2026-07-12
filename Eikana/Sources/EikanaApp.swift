@@ -13,9 +13,16 @@ struct EikanaApp: App {
     @State private var applicationService = ApplicationService()
 
     var body: some Scene {
-        MenuBarExtra("Eikana", systemImage: "command") {
+        #if DEBUG
+        MenuBarExtra("Eikana", image: "ic-command-debug") {
             MenuBarIconView()
                 .environment(applicationService)
         }
+        #else
+        MenuBarExtra("Eikana", image: "ic-command") {
+            MenuBarIconView()
+                .environment(applicationService)
+        }
+        #endif
     }
 }
